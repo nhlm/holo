@@ -1,0 +1,22 @@
+{
+    "name": "nhlm/holo",
+    "description": "Holo - create performant static websites ontop of semantic-ui and commonmark markdown in a blink",
+    "authors": [
+        {
+            "name": "Matthias kaschubowski",
+            "email": "nihylum@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "keywords": ["holo", "markdown", "website", "semantic-ui"],
+    "require": {
+        "php": ">=8.0.2",
+        "league/route": "^5.1",
+        "league/commonmark": "^2.1",
+        "symfony/yaml": "^6.0",
+        "league/flysystem": "^3.0",
+        "league/plates": "^3.4",
+        "nyholm/psr7": "^1.5",
+        "league/container": "^4.2"
+    }
+}
