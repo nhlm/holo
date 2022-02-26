@@ -10,6 +10,7 @@ namespace Holo;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Route\Router;
+use League\Route\Strategy\ApplicationStrategy as RouterApplicationStrategy;
 use League\CommonMark\Environment\Environment as CommonMarkEnvironment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\FrontMatter\FrontMatterExtension;
@@ -24,28 +25,55 @@ use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Plates\Engine;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
+use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
 
-
+/**
+ * Holo Service Provider
+ */
 class HoloServiceProvider extends AbstractServiceProvider {
 
     private const SERVICES = [
         Router::class,
-
+        CommonMarkEnvironment::class,
+        FrontMatterParser::class,
+        MarkownConverter::class,
+        MountManager::class,
+        EngineClass::class,
+        WebController::class,
     ];
 
+    /**
+     * @inherit
+     */
     public function provides(string $id): bool
     {
         return in_array($id, self::SERVICES);
     }
 
+    /**
+     * @inherit
+     */
     public function register(): void
     {
         $container = $this->getContainer();
         
-        # router
-        $container->add(Router::class)->setShared();
+        # router (singleton)
+        $container
+            ->add(
+                Router::class, 
+                function() use ($container) {
+                    $router = new Router();
+                    $strategy = new RouterApplicationStrategy();
+                    $strategy->setContainer($container);
+                    $router->setStrategy($strategy);
 
-        # commonmark
+                    return $router;
+                }
+            )
+            ->setShared()
+        ;
+
+        # commonmark (singletons)
         $container
             ->add(
                 CommonMarkEnvironment::class, 
@@ -57,6 +85,8 @@ class HoloServiceProvider extends AbstractServiceProvider {
                     $environment->addExtension(new CommonMarkCoreExtension());
                     $environment->addExtension(new FrontMatterExtension());
                     $environment->addExtension(new DefaultAttributesExtension());
+
+                    return $environment;
                 }
             )
             ->setShared()
@@ -78,19 +108,16 @@ class HoloServiceProvider extends AbstractServiceProvider {
             ->setShared()
         ;
 
-        # flysystem (file access)
+        # flysystem (singleton for file access)
         $container
             ->add(
-                League\Flysystem\MountManager::class,
+                MountManager::class,
                 function() {
                     return new MountManager(
                         [
                             # enables "web:" to access markdown files directly by the URL-Paths 
                             # jailed into the provided directory as a root directory
                             "web" => new FileSystem(new LocalFilesystemAdapter(__DIR__.'/../../web')),
-
-                            # enables "template:" to access templates files
-                            "template" => new FileSystem(new LocalFilesystemAdapter(__DIR__.'/../../templates')),
                         ]
                     );
                 }
@@ -98,23 +125,23 @@ class HoloServiceProvider extends AbstractServiceProvider {
             ->setShared()
         ;
 
-        # plates
+        # plates (singleton for templates access)
+        $container->add(Engine::class)->setShared();
+
+        # PSR-17 Factories (singleton)
+        $container->add(Psr17Factory::class)->setShared();
         $container
-            ->add(
-                Engine::class,
-                function() use ($container) {
-                    $templates = new Engine(__DIR__.'/../../templates');
-                    $templates->addData(
-                        [
-                            'request' => $container->get(Request::class),
-                        ]
-                    );
-
-                    return $templates;
-                }
-            )
+            ->add(ServerRequestCreator::class)
+            ->addArgument(Psr17Factory::class)
+            ->addArgument(Psr17Factory::class)
+            ->addArgument(Psr17Factory::class)
+            ->addArgument(Psr17Factory::class)
             ->setShared()
         ;
+        $container->add(SapiEmitter::class)->setShared();
+
+        # controller
+        $container->add(WebController::class)->addArgument(Engine::class)->addArgument(MountManager::class);
     }
 
 } 
