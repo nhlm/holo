@@ -10,6 +10,17 @@
 require(__DIR__.'/../vendor/autoload.php');
 
 /**
+ * PHP in-build development server static files gateway.
+ */
+if ( php_sapi_name() == 'cli-server' && file_exists(__DIR__.'/'.parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) ) {
+    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+    if ( ! empty($path) && $path !== "/" ) {
+        return false;
+    }
+}
+
+/**
  * the application wrapper.
  */
 $app = new Holo\Holo();

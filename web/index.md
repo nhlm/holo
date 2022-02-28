@@ -1,0 +1,4 @@
+---
+template: global
+---
+# It works.

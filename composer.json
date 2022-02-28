@@ -20,5 +20,10 @@
         "nyholm/psr7-server": "^1.0",
         "laminas/laminas-httphandlerrunner": "^2.1",
         "league/container": "^4.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Holo\\": "./app/src"
+        }
     }
 }

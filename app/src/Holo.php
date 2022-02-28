@@ -8,7 +8,7 @@
  */
 namespace Holo;
 
-use League\Container\Container as DepdenencyContainer;
+use League\Container\Container as DependencyContainer;
 use League\Route\Router;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
@@ -42,7 +42,8 @@ class Holo {
             $callback($this->container);
         }
         
-        $this->container->get(Router::class)->map('GET', '/{path:.*}', WebController::class);
+        $router = $this->container->get(Router::class);
+        $router->map('GET', '/{path:.*}', WebController::class);
     }
 
     /**

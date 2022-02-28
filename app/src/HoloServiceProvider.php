@@ -81,7 +81,7 @@ class HoloServiceProvider extends AbstractServiceProvider {
                     $configuration = [];
                     $configuration['default_attributes'] = include(__DIR__.'/../../settings/semantic-ui.php');
 
-                    $environment = new CommonmMarkEnvironment($configuration);
+                    $environment = new CommonMarkEnvironment($configuration);
                     $environment->addExtension(new CommonMarkCoreExtension());
                     $environment->addExtension(new FrontMatterExtension());
                     $environment->addExtension(new DefaultAttributesExtension());
@@ -126,7 +126,18 @@ class HoloServiceProvider extends AbstractServiceProvider {
         ;
 
         # plates (singleton for templates access)
-        $container->add(Engine::class)->setShared();
+        $container
+            ->add(
+                Engine::class,
+                function() {
+                    $engine = new Engine(__DIR__.'/../../templates');
+                    $engine->addFolder('templates', __DIR__.'/../../templates');
+
+                    return $engine;
+                }
+            )
+            ->setShared()
+        ;
 
         # PSR-17 Factories (singleton)
         $container->add(Psr17Factory::class)->setShared();
@@ -141,7 +152,12 @@ class HoloServiceProvider extends AbstractServiceProvider {
         $container->add(SapiEmitter::class)->setShared();
 
         # controller
-        $container->add(WebController::class)->addArgument(Engine::class)->addArgument(MountManager::class);
+        $container
+            ->add(WebController::class)
+            ->addArgument(Engine::class)
+            ->addArgument(MountManager::class)
+            ->addArgument(MarkdownConverter::class)
+        ;
     }
 
 } 
