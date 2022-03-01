@@ -15,6 +15,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Nyholm\Psr7\Response;
 use League\CommonMark\MarkdownConverter;
 use League\CommonMark\Extension\FrontMatter\Output\RenderedContentWithFrontMatter;
+use Holo\Exception\NoFrontmatterException;
+use Holo\Exception\UnknownTemplateException;
 
 class WebController {
 
