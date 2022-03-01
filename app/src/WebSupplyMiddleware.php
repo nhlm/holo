@@ -72,7 +72,7 @@ class WebSupplyMiddleware implements MiddlewareInterface {
                 [
                     'message' => $exception->getMessage(),
                     'code' => $exception->getCode(),
-                    'interface' => $exception::class,
+                    'interface' => get_class($exception),
                     'path' => $path,
                 ]
             );
