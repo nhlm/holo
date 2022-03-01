@@ -52,25 +52,10 @@ class WebController {
         $path = '/'.($routeArgs['path'] ?? '');
         $file = $path.($path[-1] === "/" ? 'index.md' : '.md');
 
-        if ( ! $this->filesystem->fileExists('web://'.$file) ) {
-            $response = new Response(500);
-            $response->getBody()->write($this->templates->render('templates::errors/404', ['path' => $path]));
-
-            return $response;
-        }
-
         $result = $this->markdown->convert($this->filesystem->read('web://'.$file));
 
         if ( ! $result instanceof RenderedContentWithFrontMatter ) {
-            $response = new Response(500);
-            $response->getBody()->write(
-                $this->templates->render(
-                    php_sapi_name() == 'cli-server' ? 'templates::errors/undefined-template' : 'templates::errors/500', 
-                    ['path' => $path]
-                )
-            );
-            
-            return $response;
+            throw new NoFrontmatterException(500, 'Content-File has no Frontmatter.');
         }
 
         $frontmatter = $result->getFrontmatter();
@@ -80,17 +65,10 @@ class WebController {
         }
 
         $frontmatter['content'] = $result->getContent();
+        $frontmatter['path'] = $path;
 
         if ( ! $this->templates->exists($frontmatter['template']) ) {
-            $response = new Response(500);
-            $response->getBody()->write(
-                $this->templates->render(
-                    php_sapi_name() == 'cli-server' ? 'templates::errors/unknown-template' : 'templates::errors/500', 
-                    ['path' => $path]
-                )
-            );
-
-            return $response;
+            throw new UnknownTemplateException(500, sprintf('Template "%s" unknown.', $frontmatter['template']));
         }
 
         $response = new Response(200);

@@ -43,7 +43,11 @@ class Holo {
         }
         
         $router = $this->container->get(Router::class);
-        $router->map('GET', '/{path:.*}', WebController::class);
+        
+        $router
+            ->map('GET', '/{path:.*}', WebController::class)
+            ->middleware($this->container->get(WebSupplyMiddleware::class))
+        ;
     }
 
     /**

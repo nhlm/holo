@@ -158,6 +158,16 @@ class HoloServiceProvider extends AbstractServiceProvider {
             ->addArgument(MountManager::class)
             ->addArgument(MarkdownConverter::class)
         ;
+
+        # web supply middleware for route-directory relationships and exception handling
+        $container
+            ->add(
+                WebSupplyMiddleware::class, 
+                function() use($container) {
+                    return new WebSupplyMiddleware($container);
+                }
+            )
+        ;
     }
 
 } 
