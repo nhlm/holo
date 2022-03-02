@@ -16,6 +16,7 @@ use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\FrontMatter\FrontMatterExtension;
 use League\CommonMark\Extension\FrontMatter\Output\RenderedContentWithFrontMatter;
 use League\CommonMark\Extension\DefaultAttributes\DefaultAttributesExtension;
+use League\CommonMark\Extension\Attributes\AttributesExtension;
 use League\CommonMark\MarkdownConverter;
 use League\CommonMark\Extension\FrontMatter\Data\SymfonyYamlFrontMatterParser;
 use League\CommonMark\Extension\FrontMatter\FrontMatterParser;
@@ -26,6 +27,14 @@ use League\Plates\Engine;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
+use League\CommonMark\Extension\CommonMark\Node\Block\Heading;
+use League\CommonMark\Extension\CommonMark\Node\Block\BlockQuote;
+use League\CommonMark\Extension\CommonMark\Node\Block\ListBlock;
+use League\CommonMark\Extension\CommonMark\Node\Block\ThematicBreak;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
+use League\CommonMark\Extension\Table\Table;
+use League\CommonMark\Node\Block\Paragraph;
 
 /**
  * Holo Service Provider
@@ -79,13 +88,32 @@ class HoloServiceProvider extends AbstractServiceProvider {
                 CommonMarkEnvironment::class, 
                 function() {
                     $configuration = [];
-                    $configuration['default_attributes'] = include(__DIR__.'/../../settings/semantic-ui.php');
+                    $configuration['default_attributes'] = [
+                        Table::class => [
+                            'class' => ['ui', 'celled', 'striped', 'table'],
+                        ],
+                        BlockQuote::class => [
+                            'class' => ['ui', 'secondary', 'segment'],
+                        ],
+                        ListBlock::class => [
+                            'class' => ['ui', 'list'],
+                        ],
+                        Heading::class => [
+                            'class' => ['ui', 'heading'],
+                        ],
+                        ThematicBreak::class => [
+                            'class' => ['ui', 'divider'],
+                        ],
+                        Image::class => [
+                            'class' => ['ui', 'rounded', 'bordered', 'image'],
+                        ],
+                    ];
 
                     $environment = new CommonMarkEnvironment($configuration);
                     $environment->addExtension(new CommonMarkCoreExtension());
                     $environment->addExtension(new FrontMatterExtension());
                     $environment->addExtension(new DefaultAttributesExtension());
-
+                    $environment->addExtension(new AttributesExtension());
                     return $environment;
                 }
             )
