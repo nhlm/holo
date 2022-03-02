@@ -48,7 +48,10 @@ class HoloServiceProvider extends AbstractServiceProvider {
         MarkownConverter::class,
         MountManager::class,
         EngineClass::class,
+        Psr17Factory::class,
+        SapiEmitter::class,
         WebController::class,
+        WebSupplyMiddleware::class,
     ];
 
     /**
